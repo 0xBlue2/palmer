@@ -1,0 +1,36 @@
+<h2>Demographic Viewer & Analyzer</h2>
+<p>Upload population data or select a curated snapshot to generate voter insights.</p>
+
+<div class="split">
+    <div>
+        <label for="data-upload">Upload population dataset</label>
+        <input id="data-upload" type="file" accept=".csv,.xlsx,.json" />
+        <small>Supported: CSV, XLSX, JSON. Data mapping is mocked for now.</small>
+    </div>
+    <div>
+        <label for="preset">Premade data sources</label>
+        <select id="preset">
+            <option selected>Voting age adults in Georgia</option>
+        </select>
+        <small>Mocked ACS-like snapshot with media preferences.</small>
+    </div>
+</div>
+
+<div class="stats-grid">
+{% for stat in statList.stats %}
+    <div class="stat-card">
+        <strong>{{ stat.title }}</strong>
+        {% if stat.graph %}
+            {{ stat.graph | safe }}
+        {% endif %}
+        <small>{{ stat.detail }}</small>
+    </div>
+{% endfor %}
+</div>
+
+<h3>Insights</h3>
+<ul>
+{% for insight in statList.insights %}
+<li>{{ insight }}</li>
+{% endfor %}
+</ul>

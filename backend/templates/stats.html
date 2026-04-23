@@ -1,0 +1,16 @@
+<div class="stats-grid">
+{% for stat in statList.stats %}
+    <div class="stat-card">
+        <strong>{{ stat.title }}</strong>
+        <div class="bar"><span style="--value: {{ stat.value }}%"></span></div>
+        <small>{{ stat.detail }}</small>
+    </div>
+{% endfor %}
+</div>
+
+<h3>Insights</h3>
+<ul>
+{% for insight in statList.insights %}
+<li>{{ insight }}</li>
+{% endfor %}
+</ul>

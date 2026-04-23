@@ -1,0 +1,16 @@
+<h2>AI Platform Guides</h2>
+<p>Plan messaging with awareness of summarizers, ranking systems, and moderation signals.</p>
+
+<label for="ai-platform">Select AI platform</label>
+<select name="ai" id="ai-platform" hx-target="#platform-info" hx-get="http://127.0.0.1:8000/html/section/ai">
+{% for ai_id, guide in aiGuides.items() %}
+    <option value="{{ ai_id }}">{{ guide.label }}</option>
+{% endfor %}
+</select>
+
+<div class="split" id="platform-info" style="margin-top: 1rem;">
+{% include "ai_platform.html" %}
+</div>
+
+<label for="ai-notes" style="margin-top: 1rem;">Briefing notes</label>
+<textarea id="ai-notes" placeholder="Capture campaign-specific reminders, messaging guardrails, and compliance steps here."></textarea>

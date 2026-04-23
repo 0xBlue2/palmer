@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" x-data="dashboard()">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="htmx-config" content='{"selfRequestsOnly": false}'>
+    <title>Palmer - Campaign Intelligence Dashboard</title>
+    <link rel="shortcut icon" href="https://hrc.imgix.net/Intersex-inclusive_pride_flag-684x650.png?auto=compress%2Cformat&crop=focalpoint&fit=crop&fm=webp&fp-x=0.5&fp-y=0.5&h=680&q=80&w=680&s=52c15ca8a8e87d2c5c79524ce99a983c" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.js" integrity="sha384-Q+Dky3iHVJOr6wUjQ4ulh6uQ76an/t+ak1+PjMVaxRjbZamFLAG+u9InkfjbsEQf" crossorigin="anonymous"></script>
+    <style>
+        :root {
+            --brand-primary: #6b8ee6;
+            --brand-primary-dark: #4f73d1;
+            --brand-surface: #f2f5ff;
+            --brand-accent: #8fb3ff;
+            --brand-ink: #1b2b5a;
+        }
+        body {
+            background: linear-gradient(180deg, #eef2ff 0%, #ffffff 100%);
+            color: var(--brand-ink);
+        }
+        header {
+            background: var(--brand-primary);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        header h1,
+        header p {
+            color: white;
+            margin-bottom: 0.3rem;
+        }
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        nav {
+            background: white;
+            border-radius: 1rem;
+            padding: 1rem;
+            box-shadow: 0 12px 30px rgba(27, 43, 90, 0.08);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.5rem;
+        }
+        nav button {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 0;
+            background: var(--brand-surface);
+            border: 1px solid transparent;
+            color: var(--brand-ink);
+        }
+        nav button[aria-current="true"] {
+            background: var(--brand-primary-dark);
+            color: white;
+        }
+        .panel {
+            background: white;
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            box-shadow: 0 14px 32px rgba(27, 43, 90, 0.1);
+        }
+        .panel + .panel {
+            margin-top: 1.5rem;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .stat-card {
+            background: var(--brand-surface);
+            border-radius: 1rem;
+            padding: 1rem;
+        }
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            background: var(--brand-accent);
+            color: white;
+            font-size: 0.85rem;
+        }
+        .split {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1rem;
+        }
+        .card-list {
+            display: grid;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+        .mini-card {
+            border: 1px solid #e6ebff;
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+            background: #fbfcff;
+        }
+        .bar {
+            height: 8px;
+            border-radius: 999px;
+            background: #dfe7ff;
+            position: relative;
+            overflow: hidden;
+            margin-top: 0.4rem;
+        }
+        .bar span {
+            position: absolute;
+            inset: 0;
+            width: var(--value);
+            background: var(--brand-primary);
+        }
+        textarea {
+            min-height: 140px;
+        }
+        footer {
+            margin: 2rem 0 1rem;
+            text-align: center;
+            color: #6b7aa6;
+        }
+        @media (max-width: 900px) {
+            nav {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            }
+        }
+
+        .htmx-swapping {
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <header>
+            <h1>Palmer Campaign Intelligence</h1>
+            <p>Strategic dashboard for demographic insights, AI platform guidance, and Georgia political updates.</p>
+            <div class="tag">Mock data mode</div>
+        </header>
+
+        <section class="layout">
+            <nav>
+                <button type="button" :aria-current="panel === 'demographics'" @click="panel = 'demographics'">Demographics Lab</button>
+                <button type="button" :aria-current="panel === 'ai'" @click="panel = 'ai'">AI Platform Guides</button>
+                <button type="button" :aria-current="panel === 'georgia'" @click="panel = 'georgia'">Georgia Developments</button>
+            </nav>
+
+            <div>
+                <section class="panel" x-show="panel === 'demographics'" x-transition>
+                    <div hx-get="http://127.0.0.1:8000/html/page/demographics" hx-target="this" hx-trigger="load" hx-swap="innerHTML">
+                        <p>Loading demographics...</p>
+                    </div>
+                </section>
+
+                <section class="panel" x-show="panel === 'ai'" x-transition>
+                    <div hx-get="http://127.0.0.1:8000/html/page/ai" hx-target="this" hx-trigger="load" hx-swap="innerHTML">
+                        <p>Loading AI platform guides...</p>
+                    </div>
+                </section>
+
+                <section class="panel" x-show="panel === 'georgia'" x-transition>
+                    <div hx-get="http://127.0.0.1:8000/html/page/georgia" hx-target="this" hx-trigger="load" hx-swap="innerHTML">
+                        <p>Loading Georgia developments...</p>
+                    </div>
+                </section>
+            </div>
+        </section>
+
+        <footer>
+            Dashboard mockup • Cornflower UI theme • Alpine + Pico CSS
+        </footer>
+    </main>
+
+    <script>
+        function dashboard() {
+            return {
+                panel: 'demographics'
+            }
+        }
+    </script>
+</body>
+</html>

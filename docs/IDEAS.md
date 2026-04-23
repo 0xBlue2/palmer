@@ -1,6 +1,9 @@
 # Implementation Ideas
 
 ## Notes:
+- implement caching
+    - can use cache control headers
+
 - For visualization, we can use:
     - cluvio:
         - [cluvio](https://dashboards.cluvio.com/dashboards/qxny-9e5q-k65v/shared?filters=%7B%22platform_filter%22%3A%5B%5D%2C%22political_content%22%3A%5B%5D%2C%22political_lean%22%3A%5B%5D%7D&sharingToken=78eb1196-5766-429d-acf8-edcfd96b7067&timerange=1759622400~1762300799)
@@ -25,8 +28,11 @@
 
 - Add panel that makes a call to backend (not built yet) to check sentiment on recent US news on major social media platforms
 
+- Add quick chatgpt/grok/gemini wrapper to the "platform tips" page so users can see how their message will be summarized by popular AI models
+
 ### Small
 - Save text inputted to textarea on "AI Platform Guides" panel to localstorage
 - Add another mockup panel with upcoming deadlines or voting events
     - used to decide when to text voters
+- once I fully transfer to backend, change "AI platform guides" and "georgia developments" to fetch data from the backend, instead of using hardcoded info
 

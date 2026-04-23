@@ -1,0 +1,36 @@
+<h2>Georgia Political Developments</h2>
+<p>Sample intelligence feed for staying current and supporting policy research or proposal drafting.</p>
+
+<div class="card-list">
+    <div class="mini-card">
+        <strong>Legislative spotlight</strong>
+        <ul>
+        {% for item in georgiaData.laws %}
+            <li>
+                <strong>{{ item.title }}</strong><br />
+                <small>{{ item.detail }}</small>
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
+    <div class="mini-card">
+        <strong>Recent polling pulse</strong>
+        {% for poll in georgiaData.polls %}
+            <div style="margin-top: 0.5rem;">
+                <span>{{ poll.subject }}</span>
+                <div class="bar" style="--value: {{ poll.value }}%"><span></span></div>
+                <small>{{ poll.detail }}</small>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="mini-card">
+        <strong>Key officials &amp; contact info</strong>
+        {% for official in georgiaData.officials %}
+            <div style="margin-top: 0.5rem;">
+                <strong>{{ official.name }}</strong>
+                <div>{{ official.role }}</div>
+                <small>{{ official.contact }}</small>
+            </div>
+        {% endfor %}
+    </div>
+</div>

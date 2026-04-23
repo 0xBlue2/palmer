@@ -1,2 +1,4 @@
 .*/
-PREP_WORK.md
+docs/PREP_WORK.md
+__pycache__/
+venv/
