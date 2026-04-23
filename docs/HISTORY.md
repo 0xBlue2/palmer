@@ -28,3 +28,8 @@ Three main features (all insights/data mocked):
 - rewrote index file to only fetch panel when panel button is clicked
   - still using alpinejs to manage aria-current and which panel is actively displayed
   - added hx-trigger="load, click" to first panel (demographics) so it's loaded automatically as well as when button is clicked
+
+  ## Day 4
+  :star: Added chatbot
+  - added cohere chatbot that can respond with app context
+  - currently the chat history is saved in-memory, and shared across different requests

@@ -6,6 +6,8 @@ dependencies = [
     "fastapi-cli",
     "jinja2",
     "uvicorn",
+    "python-multipart",
+    "cohere"
 ]
 
 [tool.fastapi]

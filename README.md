@@ -7,10 +7,12 @@ An example dashboard for campaign managers or political interest groups
 ## Current Mock Features:
 
 ### Demographic Analyzer
-
 ![demographics panel](/images/demographics_panel.png)
 
 Upload a dataset and receive insights
+
+#### AI Chatbot
+Ask an artificial intelligence agent about content on the website, recent Georgia legislation, or upcoming election/voting dates
 
 ### AI Platform Guides
 
