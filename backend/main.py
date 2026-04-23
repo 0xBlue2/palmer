@@ -100,17 +100,17 @@ georgiaData = GeorgiaData(
     ],
 )
 
-# serve static css and js files from the 'backend/css' and 'backend/scripts' directories
+# serve static css and js files from the 'backend/static/css' and 'backend/static/scripts' directories
 @app.get("/scripts/{filename}")
 async def serve_script(filename: str) -> FileResponse:
-    file_path = ROOT_DIR / "backend" / "scripts" / filename
+    file_path = ROOT_DIR / "backend" / "static" / "scripts" / filename
     if not file_path.is_file():
         raise HTTPException(status_code=404, detail="Script not found")
     return FileResponse(file_path, media_type="application/javascript")
 
 @app.get("/css/{filename}")
 async def serve_css(filename: str) -> FileResponse:
-    file_path = ROOT_DIR / "backend" / "css" / filename
+    file_path = ROOT_DIR / "backend" / "static" / "css" / filename
     if not file_path.is_file():
         raise HTTPException(status_code=404, detail="CSS file not found")
     return FileResponse(file_path, media_type="text/css")
