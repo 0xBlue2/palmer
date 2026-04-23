@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="htmx-config">
     <title>Palmer - Campaign Intelligence Dashboard</title>
     <link rel="shortcut icon" href="https://hrc.imgix.net/Intersex-inclusive_pride_flag-684x650.png?auto=compress%2Cformat&crop=focalpoint&fit=crop&fm=webp&fp-x=0.5&fp-y=0.5&h=680&q=80&w=680&s=52c15ca8a8e87d2c5c79524ce99a983c" type="image/x-icon">
-    <link rel="stylesheet" href="/css/pico.min.css">
+    <link rel="stylesheet" href="/static/css/pico.min.css">
     
-    <script defer src="/scripts/alpine.min.js"></script>
-    <script src="/scripts/htmx.min.js"></script>
+    <script defer src="/static/js/alpine.min.js"></script>
+    <script src="/static/js/htmx.min.js"></script>
     <style>
         :root {
             --brand-primary: #6b8ee6;
@@ -149,26 +148,29 @@
 
         <section class="layout">
             <nav>
-                <button type="button" :aria-current="panel === 'demographics'" @click="panel = 'demographics'">Demographics Lab</button>
-                <button type="button" :aria-current="panel === 'ai'" @click="panel = 'ai'">AI Platform Guides</button>
-                <button type="button" :aria-current="panel === 'georgia'" @click="panel = 'georgia'">Georgia Developments</button>
+                <button type="button" :aria-current="panel === 'demographics'" @click="panel = 'demographics'"
+                hx-get="/html/page/demographics" hx-target="#demographics" hx-swap="innerHTML" hx-trigger="load, click">Demographics Lab</button>
+                <button type="button" :aria-current="panel === 'ai'" @click="panel = 'ai'" 
+                hx-get="/html/page/ai" hx-target="#ai" hx-swap="innerHTML">AI Platform Guides</button>
+                <button type="button" :aria-current="panel === 'georgia'" @click="panel = 'georgia'"
+                hx-get="/html/page/georgia" hx-target="#georgia" hx-swap="innerHTML">Georgia Developments</button>
             </nav>
 
             <div>
                 <section class="panel" x-show="panel === 'demographics'" x-transition>
-                    <div hx-get="/html/page/demographics" hx-target="this" hx-trigger="load" hx-swap="innerHTML">
+                    <div id="demographics">
                         <p>Loading demographics...</p>
                     </div>
                 </section>
 
                 <section class="panel" x-show="panel === 'ai'" x-transition>
-                    <div hx-get="/html/page/ai" hx-target="this" hx-trigger="load" hx-swap="innerHTML">
+                    <div id="ai">
                         <p>Loading AI platform guides...</p>
                     </div>
                 </section>
 
                 <section class="panel" x-show="panel === 'georgia'" x-transition>
-                    <div hx-get="/html/page/georgia" hx-target="this" hx-trigger="load" hx-swap="innerHTML">
+                    <div id="georgia">
                         <p>Loading Georgia developments...</p>
                     </div>
                 </section>

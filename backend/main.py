@@ -5,15 +5,19 @@ from typing import Any
 from fastapi import FastAPI, Request, HTTPException, Response
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 
 from pydantic import BaseModel
 
 app = FastAPI()
 
 TEMPLATE_DIR = "backend/templates"
+STATIC_DIR = "backend/static"
 templates = Jinja2Templates(directory=TEMPLATE_DIR)
 ROOT_DIR = Path(__file__).resolve().parent.parent
 INDEX_PATH = ROOT_DIR / "htmx_index.html"
+CACHE_HEADER = {"Cache-Control": "public, max-age=43200"}  # Cache for 12 hours
+HEADERS = CACHE_HEADER
 
 class StatCard(BaseModel):
     title: str
@@ -100,20 +104,8 @@ georgiaData = GeorgiaData(
     ],
 )
 
-# serve static css and js files from the 'backend/css' and 'backend/scripts' directories
-@app.get("/scripts/{filename}")
-async def serve_script(filename: str) -> FileResponse:
-    file_path = ROOT_DIR / "backend" / "scripts" / filename
-    if not file_path.is_file():
-        raise HTTPException(status_code=404, detail="Script not found")
-    return FileResponse(file_path, media_type="application/javascript")
-
-@app.get("/css/{filename}")
-async def serve_css(filename: str) -> FileResponse:
-    file_path = ROOT_DIR / "backend" / "css" / filename
-    if not file_path.is_file():
-        raise HTTPException(status_code=404, detail="CSS file not found")
-    return FileResponse(file_path, media_type="text/css")
+# serve static css and js files from the `static` directory
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 @app.get("/", response_class=FileResponse)
 async def return_index() -> FileResponse:
@@ -134,8 +126,7 @@ async def return_page(response: Response, request: Request, type: str) -> HTMLRe
         case _:
             raise HTTPException(status_code=404, detail="Template not found")
         
-    response.headers["Cache-Control"] = "public, max-age=43200"  # Cache for 12 hours
-    return templates.TemplateResponse(request=request, name=template_name, context=context)
+    return templates.TemplateResponse(request=request, name=template_name, context=context, headers=HEADERS)
 
 @app.get("/html/section/{type}", response_class=HTMLResponse)
 async def return_section(response: Response, request: Request, type: str, ai: str) -> HTMLResponse:
@@ -146,5 +137,4 @@ async def return_section(response: Response, request: Request, type: str, ai: st
         case _:
             raise HTTPException(status_code=404, detail="Template subsection not found")
     
-    response.headers["Cache-Control"] = "public, max-age=43200"  # Cache for 12 hours    
-    return templates.TemplateResponse(request=request, name=template_name, context=context)
+    return templates.TemplateResponse(request=request, name=template_name, context=context, headers=HEADERS)

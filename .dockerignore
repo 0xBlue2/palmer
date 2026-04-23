@@ -3,3 +3,8 @@ fly.toml
 __pycache__/
 .envrc
 .venv/
+*.md
+docs/
+images/
+.gitignore
+original_index.html
