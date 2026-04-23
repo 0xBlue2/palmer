@@ -2,7 +2,7 @@ from pathlib import Path
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Response
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 
@@ -100,12 +100,27 @@ georgiaData = GeorgiaData(
     ],
 )
 
+# serve static css and js files from the 'backend/css' and 'backend/scripts' directories
+@app.get("/scripts/{filename}")
+async def serve_script(filename: str) -> FileResponse:
+    file_path = ROOT_DIR / "backend" / "scripts" / filename
+    if not file_path.is_file():
+        raise HTTPException(status_code=404, detail="Script not found")
+    return FileResponse(file_path, media_type="application/javascript")
+
+@app.get("/css/{filename}")
+async def serve_css(filename: str) -> FileResponse:
+    file_path = ROOT_DIR / "backend" / "css" / filename
+    if not file_path.is_file():
+        raise HTTPException(status_code=404, detail="CSS file not found")
+    return FileResponse(file_path, media_type="text/css")
+
 @app.get("/", response_class=FileResponse)
 async def return_index() -> FileResponse:
     return FileResponse(INDEX_PATH, media_type="text/html")
 
 @app.get("/html/page/{type}", response_class=HTMLResponse)
-async def return_page(request: Request, type: str) -> HTMLResponse:
+async def return_page(response: Response, request: Request, type: str) -> HTMLResponse:
     match type:
         case "demographics":
             template_name = "demographics.html"
@@ -118,16 +133,18 @@ async def return_page(request: Request, type: str) -> HTMLResponse:
             context = {"request": request, "georgiaData": georgiaData}
         case _:
             raise HTTPException(status_code=404, detail="Template not found")
-
+        
+    response.headers["Cache-Control"] = "public, max-age=43200"  # Cache for 12 hours
     return templates.TemplateResponse(request=request, name=template_name, context=context)
 
 @app.get("/html/section/{type}", response_class=HTMLResponse)
-async def return_section(request: Request, type: str, ai: str) -> HTMLResponse:
+async def return_section(response: Response, request: Request, type: str, ai: str) -> HTMLResponse:
     match type:
         case "ai":
             template_name = "ai_platform.html"
             context : dict[str, Request | Any ] = {"request": request, "currentGuide": aiGuides.get(ai)}
         case _:
             raise HTTPException(status_code=404, detail="Template subsection not found")
-
+    
+    response.headers["Cache-Control"] = "public, max-age=43200"  # Cache for 12 hours    
     return templates.TemplateResponse(request=request, name=template_name, context=context)
