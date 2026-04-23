@@ -26,7 +26,7 @@
 - Template directory is hard-coded in `backend/main.py` as `backend/templates`.
 
 ## Gotchas
-- HTMX calls in `htmx_index.html` point to `http://127.0.0.1:8000/...` explicitly; updates to backend routes or host/port need to stay in sync.
+- HTMX calls use same-origin relative paths under `/html/...`.
 - `backend/templates/stats.html` references `stat.value`, but `StatCard` in `backend/main.py` only defines `graph` and `detail`. This template currently appears unused.
 
 ## Reference docs

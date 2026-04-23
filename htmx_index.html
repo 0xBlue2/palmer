@@ -156,19 +156,19 @@
 
             <div>
                 <section class="panel" x-show="panel === 'demographics'" x-transition>
-                    <div hx-get="http://127.0.0.1:8000/html/page/demographics" hx-target="this" hx-trigger="load" hx-swap="innerHTML">
+                    <div hx-get="/html/page/demographics" hx-target="this" hx-trigger="load" hx-swap="innerHTML">
                         <p>Loading demographics...</p>
                     </div>
                 </section>
 
                 <section class="panel" x-show="panel === 'ai'" x-transition>
-                    <div hx-get="http://127.0.0.1:8000/html/page/ai" hx-target="this" hx-trigger="load" hx-swap="innerHTML">
+                    <div hx-get="/html/page/ai" hx-target="this" hx-trigger="load" hx-swap="innerHTML">
                         <p>Loading AI platform guides...</p>
                     </div>
                 </section>
 
                 <section class="panel" x-show="panel === 'georgia'" x-transition>
-                    <div hx-get="http://127.0.0.1:8000/html/page/georgia" hx-target="this" hx-trigger="load" hx-swap="innerHTML">
+                    <div hx-get="/html/page/georgia" hx-target="this" hx-trigger="load" hx-swap="innerHTML">
                         <p>Loading Georgia developments...</p>
                     </div>
                 </section>

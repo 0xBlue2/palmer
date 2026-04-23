@@ -1,7 +1,9 @@
+from pathlib import Path
+from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 
 from pydantic import BaseModel
@@ -10,6 +12,8 @@ app = FastAPI()
 
 TEMPLATE_DIR = "backend/templates"
 templates = Jinja2Templates(directory=TEMPLATE_DIR)
+ROOT_DIR = Path(__file__).resolve().parent.parent
+INDEX_PATH = ROOT_DIR / "htmx_index.html"
 
 class StatCard(BaseModel):
     title: str
@@ -95,6 +99,10 @@ georgiaData = GeorgiaData(
         GeorgiaOfficial(name="State Senate Majority", role="Legislative agenda", contact="Sample contact: 404-555-0195 • senate@example.gov"),
     ],
 )
+
+@app.get("/", response_class=FileResponse)
+async def return_index() -> FileResponse:
+    return FileResponse(INDEX_PATH, media_type="text/html")
 
 @app.get("/html/page/{type}", response_class=HTMLResponse)
 async def return_page(request: Request, type: str) -> HTMLResponse:
