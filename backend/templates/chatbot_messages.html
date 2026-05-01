@@ -1,4 +1,16 @@
 {% if user_message and ai_message %}
     <article class="message user-message">{{ user_message }}</article>
-    <article class="message ai-message">{{ ai_message | safe}}</article>
+    <article class="message ai-message">
+        <div class="ai-response-text">{{ ai_message | safe }}</div>
+        {% if citations %}
+        <footer class="ai-citations">
+            <strong>Sources:</strong>
+            <ol>
+                {% for citation in citations %}
+                <li><a href="{{ citation.url }}" target="_blank" rel="noopener noreferrer">{{ citation.title }}</a></li>
+                {% endfor %}
+            </ol>
+        </footer>
+        {% endif %}
+    </article>
 {% endif %}
