@@ -11,10 +11,12 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 import cohere
-from cohere.types import SystemChatMessageV2, UserChatMessageV2, AssistantChatMessageV2, ChatMessages, CitationOptions
+from cohere.types import SystemChatMessageV2, UserChatMessageV2, AssistantChatMessageV2, ChatMessages, ToolV2, ToolV2Function, ToolChatMessageV2
 import os
 
 from backend.documents import ALL_DOCUMENTS
+from backend.tools import describe
+
 
 COHERE_API_KEY = os.getenv("COHERE_API_KEY")
 MGA_TITLE_IX_URL = "https://www.mga.edu/title-ix/"
@@ -82,6 +84,7 @@ class chatInteraction(BaseModel):
 
 currentChatHistory = chatHistory(user=[], ai=[])
 stat1 = StatCard(title="Households under $75k", detail="Budget-aware messaging needed.", graph="<div class='bar'><span style='--value: 47%'></span></div>")
+
 stat2 = StatCard(title="Digital-first news", detail="Social and mobile news consumption.", graph="<div class='bar'><span style='--value: 58%'></span></div>")
 insights1 = [
     "Metro Atlanta remains the highest growth corridor for persuadable voters.",
@@ -179,9 +182,10 @@ async def return_section(response: Response, request: Request, type: str, ai: st
 
 @app.post("/chatbot/message", response_class=HTMLResponse)
 async def receive_message(request: Request, user_message: str = Form()) -> HTMLResponse:
-
+    global currentChatHistory
     assert COHERE_API_KEY is not None, "Cohere API key not found. Please set the COHERE_API_KEY environment variable."
     co = cohere.ClientV2(api_key=COHERE_API_KEY)
+
 
     system_prompt = f"""
 ## Instructions
@@ -208,6 +212,7 @@ When information comes from a document, you MUST cite it. Inline citation marker
         SystemChatMessageV2(content=system_prompt),
         UserChatMessageV2(content=user_message),
     ]
+
     if len(currentChatHistory.user) > 0:
         previous_user_messages = [UserChatMessageV2(content=content) for content in currentChatHistory.user]
         previous_assistant_messages = [AssistantChatMessageV2(content=content) for content in currentChatHistory.ai]
@@ -218,12 +223,40 @@ When information comes from a document, you MUST cite it. Inline citation marker
             UserChatMessageV2(content=user_message),
         ]
 
+    describe_tool = ToolV2(
+        type="function",
+        function=ToolV2Function(
+            name="describe_macon_statistics",
+            description="Returns descriptive statistics of crime data for Macon.",
+            parameters={}
+        )
+    )
+
     response = co.chat(
         model="command-a-03-2025",
         messages=messages,
         documents=ALL_DOCUMENTS,
+        tools=[describe_tool]
         # citation_options=CitationOptions(mode="accurate"),
     )
+
+    tool_calls_made: list[str] = []
+
+    if response.message.tool_calls:
+        for tool_call in response.message.tool_calls:
+            assert tool_call.function != None
+            if tool_call.function.name == "describe_macon_statistics":
+                tool_calls_made.append("describe_macon_statistics")
+                tool_results = describe().to_dict()
+                messages.append(AssistantChatMessageV2(tool_calls=[tool_call]))
+                messages.append(ToolChatMessageV2(tool_call_id=tool_call.id, content=str(tool_results)))
+                
+        response = co.chat(
+            model="command-a-03-2025",
+            messages=messages,
+            documents=ALL_DOCUMENTS,
+            tools=[describe_tool]
+        )
 
     # Extract text response
     responses = response.message.content
@@ -257,6 +290,7 @@ When information comes from a document, you MUST cite it. Inline citation marker
         "user_message": user_message,
         "ai_message": ai_response,
         "citations": citations,
+        "tool_calls_made": tool_calls_made
     }
 
     # don't cache chatbot responses

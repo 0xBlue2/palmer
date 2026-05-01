@@ -1,8 +1,19 @@
 {% if user_message and ai_message %}
     <article class="message user-message">{{ user_message }}</article>
     <article class="message ai-message">
+        {% if tool_calls_made %}
+            <div class="tool-calls" style="font-size: 0.8em; color: gray; margin-bottom: 5px;">
+                <em>Tools used:</em>
+                <ul>
+                    {% for tool in tool_calls_made %}
+                        <li>{{ tool }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
         <div class="ai-response-text">{{ ai_message | safe }}</div>
         {% if citations %}
+
         <footer class="ai-citations">
             <strong>Sources:</strong>
             <ol>
