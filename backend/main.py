@@ -222,7 +222,7 @@ When information comes from a document, you MUST cite it. Inline citation marker
         model="command-a-03-2025",
         messages=messages,
         documents=ALL_DOCUMENTS,
-        citation_options=CitationOptions(mode="accurate"),
+        # citation_options=CitationOptions(mode="accurate"),
     )
 
     # Extract text response
