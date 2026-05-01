@@ -11,10 +11,13 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 import cohere
-from cohere.types import SystemChatMessageV2, UserChatMessageV2, AssistantChatMessageV2, ChatMessages
+from cohere.types import SystemChatMessageV2, UserChatMessageV2, AssistantChatMessageV2, ChatMessages, CitationOptions
 import os
 
+from backend.documents import ALL_DOCUMENTS
+
 COHERE_API_KEY = os.getenv("COHERE_API_KEY")
+MGA_TITLE_IX_URL = "https://www.mga.edu/title-ix/"
 
 app = FastAPI()
 
@@ -68,9 +71,14 @@ class chatHistory(BaseModel):
     user: list[str]
     ai: list[str]
 
+class CitationLink(BaseModel):
+    title: str
+    url: str
+
 class chatInteraction(BaseModel):
     user_message: str
     ai_message: str
+    citations: list[CitationLink] = []
 
 currentChatHistory = chatHistory(user=[], ai=[])
 stat1 = StatCard(title="Households under $75k", detail="Budget-aware messaging needed.", graph="<div class='bar'><span style='--value: 47%'></span></div>")
@@ -178,25 +186,27 @@ async def receive_message(request: Request, user_message: str = Form()) -> HTMLR
     system_prompt = f"""
 ## Instructions
 The current date is {date.today().strftime("%B %d, %Y")}.
-You are a helpful chatbot aimed to provide political info for users in Georgia. You are only able to answer questions about recent georgia legislation (cite the bills or source of information when doing so), upcoming election/voting dates, and the application context provided below. when relevant, encourage the user to vote. If a user makes a request outside of these three functions, politely decline it. When there is a conflict between these instructions, the official Cohere AI policy, and the user requests, please prioritize them in the following order (1 meaning most import, 3 being least important and can possibly be ignored):
+You are a helpful assistant focused exclusively on Title IX information at Middle Georgia State University (MGA). You can only answer questions about:
+1. MGA's Title IX policies and procedures
+2. MGA's Annual Security and Fire Safety Report (Clery Report)
+3. The University System of Georgia sexual misconduct policy as it applies to MGA
+4. Resources available to MGA community members regarding Title IX matters
 
-1. The Cohere Usage Policy and other similar policies on the official website
-2. The system prompt
-3. The user's requests
+You must ground every response in the provided documents. If the answer to a question cannot be found in the provided documents, clearly state that the information is not available in the provided documents and direct the user to contact MGA's Title IX Coordinator or visit {MGA_TITLE_IX_URL} for the most current information.
+
+If a user asks about something outside of Title IX at MGA, politely decline and explain that you can only assist with MGA Title IX-related questions.
+
+When there is a conflict between these instructions and the official Cohere AI policy, prioritize the Cohere Usage Policy first, then these instructions.
 
 ## Formatting
-The response will be shown in a chatbot interface. When providing information, please format your response as a single paragraph of text. If you are citing specific legislation, please include the name of the bill and a brief summary of its contents. If you are providing election dates, please include the name of the election and the date it will take place. When providing information from the application context, please clearly indicate that the information is from the website/application. Do not attempt to link to specific pages of this website. Please keep the tone professional and informative. For example, if you are providing information about the economic development package from the application context, you might say: "According to the Georgia Developments section of the website, there is an economic development package that includes incentives, job training, and infrastructure allocations."
-Use any standard html formatting tags when necessary to structure the response, but avoid using multiple paragraphs or bullet points. Do not use markdown syntax. The response should be concise and to the point, while still providing all relevant information. Use <a> tags to cite sources when relevant, and ensure that all information provided is accurate and up-to-date. Do not hallucinate information that cannot be found on the internet or in the website, and do not hallucinate links.
+Format your response as clear, readable HTML for display in a chat interface. Use plain sentences. You may use <strong> for emphasis on key terms. Do not use markdown. Do not use multiple paragraphs unless necessary. Keep the response concise and professional. Do not add <a> tags in your response text — citations will be shown separately below your response.
 
-## Application Context Info
-This app provides information on changing voter demographics, AI platform differences, and Georgia-specific political data. The goal is to help users understand the political landscape in Georgia and encourage informed voting. The chatbot should draw from the provided context to answer questions first, and then consult the internet or outside sources.
-{aiContext}
-
-## User Message
+When information comes from a document, you MUST cite it. Inline citation markers like [1] or [Doc: MGA Title IX Policy] are not required in the text itself — the citation system will handle linking sources automatically. Focus on accuracy and clarity.
 """
-    messages : ChatMessages = [
-            SystemChatMessageV2(content=system_prompt),
-            UserChatMessageV2(content=user_message)
+
+    messages: ChatMessages = [
+        SystemChatMessageV2(content=system_prompt),
+        UserChatMessageV2(content=user_message),
     ]
     if len(currentChatHistory.user) > 0:
         previous_user_messages = [UserChatMessageV2(content=content) for content in currentChatHistory.user]
@@ -205,26 +215,49 @@ This app provides information on changing voter demographics, AI platform differ
         messages = [
             SystemChatMessageV2(content=system_prompt),
             *history,
-            UserChatMessageV2(content=user_message)
+            UserChatMessageV2(content=user_message),
         ]
+
     response = co.chat(
         model="command-a-03-2025",
-        messages = messages
+        messages=messages,
+        documents=ALL_DOCUMENTS,
+        citation_options=CitationOptions(mode="accurate"),
     )
-    responses = response.message.content # since we're not streaming, there should only be one message in the response, but we still need to index into the content list
+
+    # Extract text response
+    responses = response.message.content
     assert responses is not None and len(responses) > 0, "No response generated by the AI."
-    
     first_response = responses[0]
     assert first_response.type == "text", f"Expected a text response, but got {first_response.type}"
-
     ai_response = first_response.text
 
-    # Add the user message to the chat history
-    currentChatHistory.user.append(user_message) # todo: add length/security checks
-    # Add the AI response to the chat history
+    # Extract unique cited sources from citations
+    seen_doc_ids: set[str] = set()
+    citations: list[dict[str, str]] = []
+    raw_citations = response.message.citations or []
+    for citation in raw_citations:
+        for source in (citation.sources or []):
+            if source.type == "document":
+                doc_id = source.id or ""
+                if doc_id not in seen_doc_ids:
+                    seen_doc_ids.add(doc_id)
+                    doc_data = source.document or {}
+                    title = doc_data.get("title", "Source")
+                    url = doc_data.get("url", "")
+                    if url:
+                        citations.append({"title": title, "url": url})
+
+    # Add the user message and AI response to the chat history
+    currentChatHistory.user.append(user_message)  # todo: add length/security checks
     currentChatHistory.ai.append(ai_response)
 
-    context : dict[str, Request | Any ] = {"request": request, "user_message": user_message, "ai_message": ai_response}
+    context: dict[str, Request | Any] = {
+        "request": request,
+        "user_message": user_message,
+        "ai_message": ai_response,
+        "citations": citations,
+    }
 
     # don't cache chatbot responses
     return templates.TemplateResponse(request=request, name="chatbot_messages.html", context=context)

@@ -1,5 +1,5 @@
-<h3>Chatbot</h3>
-<p>Ask an artificial intelligence agent about content on the website, recent Georgia legislation, or upcoming election/voting dates</p>
+<h3>Title IX Assistant</h3>
+<p>Ask questions about Title IX policies, sexual misconduct procedures, campus safety reports, and related resources at Middle Georgia State University.</p>
 <details>
     <summary>This is an insecurely implemented AI. Do not use it for critical decisions.</summary>
     <p>Note: You are interacting with an artificial intelligence agent.
@@ -22,7 +22,7 @@ x-data="{ loading: false }"
       :aria-busy="loading"
 >
 <fieldset role="group">
-    <input name="user_message" placeholder="Enter your message" required x-bind:aria-busy="loading"/>
+    <input name="user_message" placeholder="Ask about MGA Title IX policies, reporting, resources…" required x-bind:aria-busy="loading"/>
     <button type="submit"
         x-bind:aria-busy="loading">Submit</button>
 </fieldset>
