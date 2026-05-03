@@ -33,3 +33,10 @@ Three main features (all insights/data mocked):
   :star: Added chatbot
   - added cohere chatbot that can respond with app context
   - currently the chat history is saved in-memory, and shared across different requests
+
+  ## Day 5
+  - asked copilot to rewrite the backend to use RAG with official MGA title ix documents, and add citations to frotend UI
+  - added demo tool call to run df.describe() on a server-hosted csv file
+
+  ## Day 6
+  - deleting/restructuring website content after changing from initial purpose

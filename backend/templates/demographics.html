@@ -16,18 +16,6 @@
     </div>
 </div>
 
-<div class="stats-grid">
-{% for stat in statList.stats %}
-    <div class="stat-card">
-        <strong>{{ stat.title }}</strong>
-        {% if stat.graph %}
-            {{ stat.graph | safe }}
-        {% endif %}
-        <small>{{ stat.detail }}</small>
-    </div>
-{% endfor %}
-</div>
-
 <h3>Insights</h3>
 <ul>
 {% for insight in statList.insights %}

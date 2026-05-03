@@ -141,53 +141,9 @@
 <body>
     <main class="container">
         <header>
-            <h1>Palmer Campaign Intelligence</h1>
-            <p>Strategic dashboard for demographic insights, AI platform guidance, and Georgia political updates.</p>
-            <div class="tag">Mock data mode</div>
+            <h1>Title IX Info for MGA</h1>
+            <p>Learn about MGA's Title IX policies</p>
         </header>
-
-        <section class="layout">
-            <nav>
-                <button type="button" :aria-current="panel === 'demographics'" @click="panel = 'demographics'"
-                hx-get="/html/page/demographics" hx-target="#demographics" hx-swap="innerHTML" hx-trigger="load, click">Demographics Lab</button>
-                <button type="button" :aria-current="panel === 'ai'" @click="panel = 'ai'" 
-                hx-get="/html/page/ai" hx-target="#ai" hx-swap="innerHTML">AI Platform Guides</button>
-                <button type="button" :aria-current="panel === 'georgia'" @click="panel = 'georgia'"
-                hx-get="/html/page/georgia" hx-target="#georgia" hx-swap="innerHTML">Georgia Developments</button>
-            </nav>
-
-            <div>
-                <section class="panel" x-show="panel === 'demographics'" x-transition>
-                    <div id="demographics">
-                        <p>Loading demographics...</p>
-                    </div>
-                </section>
-
-                <section class="panel" x-show="panel === 'ai'" x-transition>
-                    <div id="ai">
-                        <p>Loading AI platform guides...</p>
-                    </div>
-                </section>
-
-                <section class="panel" x-show="panel === 'georgia'" x-transition>
-                    <div id="georgia">
-                        <p>Loading Georgia developments...</p>
-                    </div>
-                </section>
-            </div>
-        </section>
-
-        <footer>
-            Dashboard mockup • Cornflower UI theme • Alpine + Pico CSS
-        </footer>
     </main>
-
-    <script>
-        function dashboard() {
-            return {
-                panel: 'demographics'
-            }
-        }
-    </script>
 </body>
 </html>
