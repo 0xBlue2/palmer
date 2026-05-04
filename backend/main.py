@@ -62,12 +62,9 @@ def template_exists(template_name: str) -> bool:
 def get_template_path(template_name: str) -> str:
     html_path = os.path.join(FULL_PATH_PAGES_DIR, f"{template_name}.html") # "pages/chatbot.html", relative to templates directory
     md_path = os.path.join(FULL_PATH_PAGES_DIR, f"{template_name}.md")
-    print(FULL_PATH_PAGES_DIR)
     if os.path.isfile(html_path): # return relative path
-        print(f"Found HTML template for {template_name}: {html_path}")
         return RELATIVE_PATH_PAGES_DIR + "/" + f"{template_name}.html"
     elif os.path.isfile(TEMPLATE_DIR / md_path): # return full path since md files have to be read manually
-        print(f"Found Markdown template for {template_name}: {md_path}")
         return md_path
     else:
         return "" # for pydantic
@@ -81,7 +78,6 @@ def render_template(template_name: str, request: Request) -> HTMLResponse:
         "files": os.listdir(FULL_PATH_PAGES_DIR),
         "currentPage": template_name
     }
-    print(context)
     name = get_template_path(template_name)
     try: # try to render .html
         return templates.TemplateResponse(request=request, name=name, context=context, headers=HEADERS)
@@ -99,13 +95,6 @@ def render_template(template_name: str, request: Request) -> HTMLResponse:
 async def return_page(response: Response, request: Request, template: str) -> HTMLResponse:
     if not template_exists(template):
         raise HTTPException(status_code=404, detail="Template not found")  
-    context : dict[str, Request | Any ] = {
-        "request": request,
-        "files": os.listdir(FULL_PATH_PAGES_DIR),
-        "currentPage": template
-    }
-    print(context)
-    print("returning page for template:", template)
     return render_template(template, request)
 
 @app.get("/html/section/{type}", response_class=HTMLResponse)
@@ -135,17 +124,18 @@ You are a helpful assistant focused exclusively on Title IX information at Middl
 3. The University System of Georgia sexual misconduct policy as it applies to MGA
 4. Resources available to MGA community members regarding Title IX matters
 
-You must ground every response in the provided documents. If the answer to a question cannot be found in the provided documents, clearly state that the information is not available in the provided documents and direct the user to contact MGA's Title IX Coordinator or visit {MGA_TITLE_IX_URL} for the most current information.
-
-If a user asks about something outside of Title IX at MGA, politely decline and explain that you can only assist with MGA Title IX-related questions.
-
-When there is a conflict between these instructions and the official Cohere AI policy, prioritize the Cohere Usage Policy first, then these instructions.
-
 ## Formatting / Style
 Format your response as clear, readable HTML for display in a chat interface. Use plain sentences. Do not use markdown. Do not use multiple paragraphs unless necessary. Keep the response concise and professional. Do not add <a> tags in your response text — citations will be shown separately below your response.
 When using documents, summarize the relevant information in your own words. Do not copy and paste large sections of text. Translate any technical or legal language into clear, plain language that is easy to understand. When reading markdown documents, be sure to interpret the markdown formatting correctly (e.g. lists, tables) and include that formatting in your response when relevant. Example: if the relevant information is presented as a list in the document, present it as a list(using <ul> and <li> tags) in your response.
 
 When information comes from a document, you MUST cite it. Do not include inline citation markers like [1] or [Doc: MGA Title IX Policy]  — the citation system will handle linking sources automatically. Focus on accuracy and clarity.
+
+## Important Notes
+You must ground every response in the provided documents. If the answer to a question cannot be found in the provided documents, clearly state that the information is not available in the provided documents and direct the user to contact MGA's Title IX Coordinator or visit {MGA_TITLE_IX_URL} for the most current information.
+
+If a user asks about something outside of Title IX at MGA, politely decline and explain that you can only assist with MGA Title IX-related questions.
+
+When there is a conflict between these instructions and the official Cohere AI policy, prioritize the Cohere Usage Policy first, then these instructions.
 """
 
     messages = [

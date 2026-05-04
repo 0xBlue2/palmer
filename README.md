@@ -1,26 +1,13 @@
-# palmer
+# palmer - demo site about MGA's Title IX info
 
 ![header of website - Palmer Campaign Intelligence](/images/main.png)
 
-An example dashboard for campaign managers or political interest groups
+A website with a chatbot to learn about Title IX policies at Middle Georgia
 
-## Current Mock Features:
+## Current Features:
 
-### Demographic Analyzer
-![demographics panel](/images/demographics_panel.png)
+### Chatbot
+![chatbot interface](/images/ai_chatbot.png)
 
-Upload a dataset and receive insights
-
-#### AI Chatbot
-Ask an artificial intelligence agent about content on the website, recent Georgia legislation, or upcoming election/voting dates
-
-### AI Platform Guides
-
-![AI Platform Guides - X, Meta AI, Google Gemini](/images/ai_panel.png)
-
-Information about the AI models available on various social media platforms or from major tech companies
-
-### Political Develpment Tracker
-Displays recent political developments in Georgia
-
-![Example developments in Georgia](/images/developments_panel.png)
+Ask the Cohere Chat model about MGA's Title IX policies and available support, using official MGA/USG documents
+- Note: each chat takes about 5-10 seconds to load
