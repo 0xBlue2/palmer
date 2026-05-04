@@ -46,3 +46,4 @@ Three main features (all insights/data mocked):
   - updated chatbot prompt to summarize instead of copying from documents
   - added code to add resources.md contents to the RAG docs
   - stopped duplicating chat history in currentChatHistory and messages variables
+  - broke large main file into CONSTANTS, helpers, template_setup, and tools (.py) files
