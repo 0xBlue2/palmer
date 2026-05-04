@@ -8,7 +8,6 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 
 import jinja2
-from pydantic import BaseModel
 import mistune
 
 import cohere
@@ -17,7 +16,6 @@ import os
 
 from backend.documents import ALL_DOCUMENTS
 from backend.tools import describe
-
 
 COHERE_API_KEY = os.getenv("COHERE_API_KEY")
 MGA_TITLE_IX_URL = "https://www.mga.edu/title-ix/"
@@ -43,20 +41,8 @@ jenv.globals = globals() # let jinja2 templates access libraries
 templates = Jinja2Templates(env=jenv)
 
 
-class chatHistory(BaseModel):
-    user: list[str]
-    ai: list[str]
 
-class CitationLink(BaseModel):
-    title: str
-    url: str
-
-class chatInteraction(BaseModel):
-    user_message: str
-    ai_message: str
-    citations: list[CitationLink] = []
-
-currentChatHistory = chatHistory(user=[], ai=[])
+messages: ChatMessages = []
 
 
 # serve static css and js files from the `static` directory
@@ -111,7 +97,6 @@ def render_template(template_name: str, request: Request) -> HTMLResponse:
     
 @app.get("/{template}", response_class=HTMLResponse)
 async def return_page(response: Response, request: Request, template: str) -> HTMLResponse:
-    print(currentChatHistory)
     if not template_exists(template):
         raise HTTPException(status_code=404, detail="Template not found")  
     context : dict[str, Request | Any ] = {
@@ -125,11 +110,10 @@ async def return_page(response: Response, request: Request, template: str) -> HT
 
 @app.get("/html/section/{type}", response_class=HTMLResponse)
 async def return_section(response: Response, request: Request, type: str, ai: str | None = None) -> HTMLResponse:
-    print(currentChatHistory)
     match type:
         case "chatbot":
             template_name = "chatbot.html"
-            context : dict[str, Request | Any ] = {"request": request, "chatHistory": currentChatHistory}
+            context : dict[str, Request | Any ] = {"request": request}
         case _:
             raise HTTPException(status_code=404, detail="Template subsection not found")
     
@@ -137,8 +121,7 @@ async def return_section(response: Response, request: Request, type: str, ai: st
 
 @app.post("/chatbot/message", response_class=HTMLResponse)
 async def receive_message(request: Request, user_message: str = Form()) -> HTMLResponse:
-    global currentChatHistory
-    print(currentChatHistory)
+    global messages
     assert COHERE_API_KEY is not None, "Cohere API key not found. Please set the COHERE_API_KEY environment variable."
     co = cohere.ClientV2(api_key=COHERE_API_KEY)
 
@@ -158,26 +141,17 @@ If a user asks about something outside of Title IX at MGA, politely decline and 
 
 When there is a conflict between these instructions and the official Cohere AI policy, prioritize the Cohere Usage Policy first, then these instructions.
 
-## Formatting
-Format your response as clear, readable HTML for display in a chat interface. Use plain sentences. You may use <strong> for emphasis on key terms. Do not use markdown. Do not use multiple paragraphs unless necessary. Keep the response concise and professional. Do not add <a> tags in your response text — citations will be shown separately below your response.
+## Formatting / Style
+Format your response as clear, readable HTML for display in a chat interface. Use plain sentences. Do not use markdown. Do not use multiple paragraphs unless necessary. Keep the response concise and professional. Do not add <a> tags in your response text — citations will be shown separately below your response.
+When using documents, summarize the relevant information in your own words. Do not copy and paste large sections of text. Translate any technical or legal language into clear, plain language that is easy to understand. When reading markdown documents, be sure to interpret the markdown formatting correctly (e.g. lists, tables) and include that formatting in your response when relevant. Example: if the relevant information is presented as a list in the document, present it as a list(using <ul> and <li> tags) in your response.
 
-When information comes from a document, you MUST cite it. Inline citation markers like [1] or [Doc: MGA Title IX Policy] are not required in the text itself — the citation system will handle linking sources automatically. Focus on accuracy and clarity.
+When information comes from a document, you MUST cite it. Do not include inline citation markers like [1] or [Doc: MGA Title IX Policy]  — the citation system will handle linking sources automatically. Focus on accuracy and clarity.
 """
 
-    messages: ChatMessages = [
+    messages = [
         SystemChatMessageV2(content=system_prompt),
         UserChatMessageV2(content=user_message),
     ]
-
-    if len(currentChatHistory.user) > 0:
-        previous_user_messages = [UserChatMessageV2(content=content) for content in currentChatHistory.user]
-        previous_assistant_messages = [AssistantChatMessageV2(content=content) for content in currentChatHistory.ai]
-        history = [chat for pair in zip(previous_user_messages, previous_assistant_messages) for chat in pair]
-        messages = [
-            SystemChatMessageV2(content=system_prompt),
-            *history,
-            UserChatMessageV2(content=user_message),
-        ]
 
     describe_tool = ToolV2(
         type="function",
@@ -192,7 +166,7 @@ When information comes from a document, you MUST cite it. Inline citation marker
         model="command-a-03-2025",
         messages=messages,
         documents=ALL_DOCUMENTS,
-        tools=[describe_tool]
+        # tools=[describe_tool]
         # citation_options=CitationOptions(mode="accurate"),
     )
 
@@ -238,8 +212,8 @@ When information comes from a document, you MUST cite it. Inline citation marker
                         citations.append({"title": title, "url": url})
 
     # Add the user message and AI response to the chat history
-    currentChatHistory.user.append(user_message)  # todo: add length/security checks
-    currentChatHistory.ai.append(ai_response)
+    messages.append(UserChatMessageV2(content=user_message))  # todo: add length/security checks
+    messages.append(AssistantChatMessageV2(content=ai_response))
 
     context: dict[str, Request | Any] = {
         "request": request,
@@ -250,4 +224,5 @@ When information comes from a document, you MUST cite it. Inline citation marker
     }
 
     # don't cache chatbot responses
+    print(messages)
     return templates.TemplateResponse(request=request, name="chatbot_messages.html", context=context)

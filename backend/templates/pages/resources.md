@@ -23,3 +23,6 @@ The respondent is only informed if a complaint is made. You can receive supporti
 Title IX applies to anything happening under the school's educational programs and activities. This includes events that happen off-campus or online.
 
 [https://www.ed.gov/media/document/digital-sexual-harassment-under-2020-title-ix-regulations-109318.pdf](https://www.ed.gov/media/document/digital-sexual-harassment-under-2020-title-ix-regulations-109318.pdf), page 3
+
+#### File A Report
+[https://cm.maxient.com/reportingform.php?MiddleGAState&layout_id=8](https://cm.maxient.com/reportingform.php?MiddleGAState&layout_id=8)

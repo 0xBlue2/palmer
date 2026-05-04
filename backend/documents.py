@@ -61,59 +61,8 @@ TITLE_IX_POLICY = Document(
         ),
     },
 )
-
 # ---------------------------------------------------------------------------
-# Document 2 – MGA Sexual Misconduct / Title IX Procedures
-# ---------------------------------------------------------------------------
-TITLE_IX_PROCEDURES = Document(
-    id="mga-title-ix-procedures",
-    data={
-        "title": "MGA Title IX Grievance Procedures and Sexual Misconduct Policy",
-        "url": "https://www.mga.edu/title-ix/policies-and-procedures.php",
-        "text": (
-            "Middle Georgia State University (MGA) maintains formal grievance procedures for resolving "
-            "formal complaints of sexual harassment as defined under Title IX. The following outlines "
-            "key procedural elements. "
-            "\n\n"
-            "Formal Complaint: A formal complaint is a document filed by a complainant or signed by the "
-            "Title IX Coordinator alleging sexual harassment and requesting an investigation. A formal "
-            "complaint may be filed in person, by mail, or by electronic mail to the Title IX Coordinator. "
-            "\n\n"
-            "Investigation: MGA's investigation of a formal complaint will be completed within a "
-            "reasonably prompt time frame (generally 60–90 business days). The investigator(s) are "
-            "trained, impartial, and have no conflict of interest. Both parties are given equal "
-            "opportunity to present evidence and witnesses. Both parties receive written notice of the "
-            "allegations, the identity of the investigator, and the right to inspect and review evidence. "
-            "\n\n"
-            "Live Hearing: For complaints involving students, MGA holds a live hearing at which both "
-            "parties have the opportunity for their advisors to conduct cross-examination. The hearing "
-            "officer is a trained, impartial decision-maker. "
-            "\n\n"
-            "Determination: After the hearing, the decision-maker issues a written determination regarding "
-            "responsibility, sanctions (if any), and remedies. Sanctions for students found responsible "
-            "may include suspension, expulsion, or other educational sanctions. Sanctions for employees "
-            "found responsible may include termination or other employment actions. "
-            "\n\n"
-            "Appeals: Either party may appeal the determination or dismissal of a formal complaint on "
-            "the basis of: procedural irregularity, new evidence not reasonably available at the time "
-            "of the determination, or bias or conflict of interest on the part of the Title IX Coordinator, "
-            "investigator, or decision-maker. "
-            "\n\n"
-            "Informal Resolution: With the written consent of both parties, MGA may offer an informal "
-            "resolution process (such as mediation) at any time after a formal complaint is filed, "
-            "but before a determination is reached. Informal resolution is never available when the "
-            "respondent is an employee. "
-            "\n\n"
-            "Resources and Support: Students and employees may access support resources including "
-            "MGA Counseling Services (available at all campuses), the Student Health Center, the Dean "
-            "of Students Office, and external community resources such as crisis centers and law "
-            "enforcement. Information on local resources is available on the MGA Title IX website. "
-        ),
-    },
-)
-
-# ---------------------------------------------------------------------------
-# Document 3 – MGA Annual Security and Fire Safety Report (Clery Report)
+# Document 2 – MGA Annual Security and Fire Safety Report (Clery Report)
 # ---------------------------------------------------------------------------
 ANNUAL_SECURITY_REPORT = Document(
     id="mga-annual-security-fire-safety-report",
@@ -174,7 +123,7 @@ ANNUAL_SECURITY_REPORT = Document(
 )
 
 # ---------------------------------------------------------------------------
-# Document 4 – USG Board of Regents Sexual Misconduct Policy (Policy 6.7)
+# Document 3 – USG Board of Regents Sexual Misconduct Policy (Policy 6.7)
 # ---------------------------------------------------------------------------
 USG_SEXUAL_MISCONDUCT_POLICY = Document(
     id="usg-bor-sexual-misconduct-policy",
@@ -210,10 +159,25 @@ USG_SEXUAL_MISCONDUCT_POLICY = Document(
     },
 )
 
+resources = open("backend/templates/pages/resources.md", "r").read()
+# chunk resources into sections for better retrieval and citation
+resources_sections = resources.split("\n## ")
+resources_sections = [section.strip() for section in resources_sections if section.strip()]
+WEBSITE_RESOURCES_PAGE = Document(
+    id="website-resources-page",
+    data={
+        "title": "Website Resources Page",
+        "url": "/resources",
+        "text": (
+            resources_sections
+        ),
+    },
+)
+
 # All documents to pass to the Cohere API
 ALL_DOCUMENTS = [
     TITLE_IX_POLICY,
-    TITLE_IX_PROCEDURES,
     ANNUAL_SECURITY_REPORT,
     USG_SEXUAL_MISCONDUCT_POLICY,
+    WEBSITE_RESOURCES_PAGE,
 ]

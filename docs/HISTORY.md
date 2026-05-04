@@ -41,3 +41,8 @@ Three main features (all insights/data mocked):
   ## Day 6
   - deleting/restructured website content for title ix info
   - added custom code to automatically display html/md files in templates/pages
+
+  ## Day 7
+  - updated chatbot prompt to summarize instead of copying from documents
+  - added code to add resources.md contents to the RAG docs
+  - stopped duplicating chat history in currentChatHistory and messages variables
