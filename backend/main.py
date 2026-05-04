@@ -28,7 +28,7 @@ RELATIVE_PATH_PAGES_DIR = "pages" # path relative to jinja2 env
 FULL_PATH_PAGES_DIR = TEMPLATE_DIR / RELATIVE_PATH_PAGES_DIR
 STATIC_DIR = ROOT_DIR / "backend/static"
 INDEX_PATH = ROOT_DIR / "index.html"
-CACHE_HEADER = {"Cache-Control": "public, max-age=0"}  # Cache for 0
+CACHE_HEADER = {"Cache-Control": "public, max-age=3600"}  # Cache for 1 hour
 HEADERS = CACHE_HEADER
 
 jenv = jinja2.Environment(
@@ -214,5 +214,4 @@ When there is a conflict between these instructions and the official Cohere AI p
     }
 
     # don't cache chatbot responses
-    print(messages)
     return templates.TemplateResponse(request=request, name="chatbot_messages.html", context=context)
