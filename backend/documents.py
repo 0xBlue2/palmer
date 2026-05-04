@@ -119,7 +119,7 @@ ANNUAL_SECURITY_REPORT = Document(
     id="mga-annual-security-fire-safety-report",
     data={
         "title": "MGA Annual Security and Fire Safety Report (Clery Report)",
-        "url": "https://www.mga.edu/police/annual-report.php",
+        "url": "https://www.mga.edu/police/docs/Annual_Security_Report.pdf",
         "text": (
             "Middle Georgia State University (MGA) publishes an Annual Security and Fire Safety Report "
             "(also called the Clery Report) each year in compliance with the Jeanne Clery Disclosure of "

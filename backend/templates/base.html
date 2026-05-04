@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="en" x-data="dashboard()">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Palmer - Campaign Intelligence Dashboard</title>
+    <title>MGA Title IX Information</title>
     <link rel="shortcut icon" href="https://hrc.imgix.net/Intersex-inclusive_pride_flag-684x650.png?auto=compress%2Cformat&crop=focalpoint&fit=crop&fm=webp&fp-x=0.5&fp-y=0.5&h=680&q=80&w=680&s=52c15ca8a8e87d2c5c79524ce99a983c" type="image/x-icon">
     <link rel="stylesheet" href="/static/css/pico.min.css">
     
-    <script defer src="/static/js/alpine.min.js"></script>
+    <!-- <script defer src="/static/js/alpine.min.js"></script> -->
     <script src="/static/js/htmx.min.js"></script>
     <style>
         :root {
@@ -144,6 +144,24 @@
             <h1>Title IX Info for MGA</h1>
             <p>Learn about MGA's Title IX policies</p>
         </header>
+
+        <section class="layout">
+            <nav role="navigation" aria-label="Main navigation" >
+                {% for file in files %}
+                    {% set basename = Path(file).stem %}
+                    {% set is_current = 'true' if basename == currentPage else 'false' %}
+                    <a href="/{{ basename }}" aria-current="{{ is_current }}">
+                        <button type="button" aria-current="{{ is_current }}">  
+                        {{ basename.replace('_', ' ').title() }}
+                        </button>
+                       
+                    </a>
+                {% endfor %}
+            </nav>            
+        </section>
+        <section class="panel">
+            <div id="content">{% block content %}{% endblock %}</div>
+        </section>
     </main>
 </body>
 </html>

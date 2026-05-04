@@ -1,14 +1,15 @@
 from datetime import date
 from pathlib import Path
-from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, Request, HTTPException, Response, Form
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 
+import jinja2
 from pydantic import BaseModel
+import mistune
 
 import cohere
 from cohere.types import SystemChatMessageV2, UserChatMessageV2, AssistantChatMessageV2, ChatMessages, ToolV2, ToolV2Function, ToolChatMessageV2
@@ -23,13 +24,24 @@ MGA_TITLE_IX_URL = "https://www.mga.edu/title-ix/"
 
 app = FastAPI()
 
-TEMPLATE_DIR = "backend/templates"
-STATIC_DIR = "backend/static"
-templates = Jinja2Templates(directory=TEMPLATE_DIR)
 ROOT_DIR = Path(__file__).resolve().parent.parent
+TEMPLATE_DIR = ROOT_DIR / "backend/templates"
+RELATIVE_PATH_PAGES_DIR = "pages" # path relative to jinja2 env
+FULL_PATH_PAGES_DIR = TEMPLATE_DIR / RELATIVE_PATH_PAGES_DIR
+STATIC_DIR = ROOT_DIR / "backend/static"
 INDEX_PATH = ROOT_DIR / "index.html"
-CACHE_HEADER = {"Cache-Control": "public, max-age=3600"}  # Cache for 1 hour
+CACHE_HEADER = {"Cache-Control": "public, max-age=0"}  # Cache for 0
 HEADERS = CACHE_HEADER
+
+jenv = jinja2.Environment(
+    loader=jinja2.FileSystemLoader(TEMPLATE_DIR),
+    autoescape=jinja2.select_autoescape(["html"])
+)
+
+jenv.globals = globals() # let jinja2 templates access libraries
+
+templates = Jinja2Templates(env=jenv)
+
 
 class chatHistory(BaseModel):
     user: list[str]
@@ -50,31 +62,74 @@ currentChatHistory = chatHistory(user=[], ai=[])
 # serve static css and js files from the `static` directory
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
-@app.get("/", response_class=FileResponse)
-async def return_index() -> FileResponse:
-    return FileResponse(INDEX_PATH, media_type="text/html")
+@app.get("/", response_class=HTMLResponse)
+async def return_index(request: Request) -> HTMLResponse:
+    return render_template("chatbot", request)
+    
+# helper function to check if a template exists in pages dir
+def template_exists(template_name: str) -> bool:
+    html_path = os.path.join(FULL_PATH_PAGES_DIR, f"{template_name}.html")
+    md_path = os.path.join(FULL_PATH_PAGES_DIR, f"{template_name}.md")
+    return os.path.isfile(html_path) or os.path.isfile(md_path)
 
-@app.get("/html/page/{type}", response_class=HTMLResponse)
-async def return_page(response: Response, request: Request, type: str) -> HTMLResponse:
-    match type:
-        case "demographics":
-            template_name = "demographics.html"
-            context : dict[str, Request | Any ] = {"request": request}
-        case _:
-            raise HTTPException(status_code=404, detail="Template not found")
-        
-    return templates.TemplateResponse(request=request, name=template_name, context=context, headers=HEADERS)
+# helper function to return template path given basename
+def get_template_path(template_name: str) -> str:
+    html_path = os.path.join(FULL_PATH_PAGES_DIR, f"{template_name}.html") # "pages/chatbot.html", relative to templates directory
+    md_path = os.path.join(FULL_PATH_PAGES_DIR, f"{template_name}.md")
+    print(FULL_PATH_PAGES_DIR)
+    if os.path.isfile(html_path): # return relative path
+        print(f"Found HTML template for {template_name}: {html_path}")
+        return RELATIVE_PATH_PAGES_DIR + "/" + f"{template_name}.html"
+    elif os.path.isfile(TEMPLATE_DIR / md_path): # return full path since md files have to be read manually
+        print(f"Found Markdown template for {template_name}: {md_path}")
+        return md_path
+    else:
+        return "" # for pydantic
+
+# helper function to render template  with context given basename and request
+def render_template(template_name: str, request: Request) -> HTMLResponse:
+    if not template_exists(template_name):
+        raise HTTPException(status_code=404, detail="Template not found")  
+    context : dict[str, Request | Any ] = {
+        "request": request,
+        "files": os.listdir(FULL_PATH_PAGES_DIR),
+        "currentPage": template_name
+    }
+    print(context)
+    name = get_template_path(template_name)
+    try: # try to render .html
+        return templates.TemplateResponse(request=request, name=name, context=context, headers=HEADERS)
+    except jinja2.TemplateNotFound: # assuming markdown
+        # read from file and convert markdown to html
+        with open(FULL_PATH_PAGES_DIR / name, "r", encoding="utf-8") as f:
+            content = f.read()
+            md = mistune.html(content)
+            assert type(md) == str, "Expected mistune to return a string of HTML"
+            md = "{% extends 'base.html' %}\n{% block content %}" + md + "\n{% endblock %}"
+            rendered_html = jenv.from_string(md).render(context)
+            return HTMLResponse(content=rendered_html, headers=HEADERS)
+    
+@app.get("/{template}", response_class=HTMLResponse)
+async def return_page(response: Response, request: Request, template: str) -> HTMLResponse:
+    print(currentChatHistory)
+    if not template_exists(template):
+        raise HTTPException(status_code=404, detail="Template not found")  
+    context : dict[str, Request | Any ] = {
+        "request": request,
+        "files": os.listdir(FULL_PATH_PAGES_DIR),
+        "currentPage": template
+    }
+    print(context)
+    print("returning page for template:", template)
+    return render_template(template, request)
 
 @app.get("/html/section/{type}", response_class=HTMLResponse)
 async def return_section(response: Response, request: Request, type: str, ai: str | None = None) -> HTMLResponse:
-    match (type, ai in aiGuides):
-        case "ai", True:
-            assert ai is not None  # for pydantic
-            template_name = "ai_platform.html"
-            context : dict[str, Request | Any ] = {"request": request, "currentGuide": aiGuides.get(ai)}
-        case "chatbot", _:
+    print(currentChatHistory)
+    match type:
+        case "chatbot":
             template_name = "chatbot.html"
-            context = {"request": request, "aiContext": aiContext, "chatHistory": currentChatHistory}
+            context : dict[str, Request | Any ] = {"request": request, "chatHistory": currentChatHistory}
         case _:
             raise HTTPException(status_code=404, detail="Template subsection not found")
     
@@ -83,6 +138,7 @@ async def return_section(response: Response, request: Request, type: str, ai: st
 @app.post("/chatbot/message", response_class=HTMLResponse)
 async def receive_message(request: Request, user_message: str = Form()) -> HTMLResponse:
     global currentChatHistory
+    print(currentChatHistory)
     assert COHERE_API_KEY is not None, "Cohere API key not found. Please set the COHERE_API_KEY environment variable."
     co = cohere.ClientV2(api_key=COHERE_API_KEY)
 

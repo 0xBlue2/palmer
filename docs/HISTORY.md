@@ -39,4 +39,5 @@ Three main features (all insights/data mocked):
   - added demo tool call to run df.describe() on a server-hosted csv file
 
   ## Day 6
-  - deleting/restructuring website content after changing from initial purpose
+  - deleting/restructured website content for title ix info
+  - added custom code to automatically display html/md files in templates/pages

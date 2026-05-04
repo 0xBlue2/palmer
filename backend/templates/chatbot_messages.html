@@ -1,3 +1,5 @@
+{%block content %}
+
 {% if user_message and ai_message %}
     <article class="message user-message">{{ user_message }}</article>
     <article class="message ai-message">
@@ -25,3 +27,5 @@
         {% endif %}
     </article>
 {% endif %}
+
+{% endblock %}

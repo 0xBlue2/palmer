@@ -1,11 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
 <h3>Title IX Assistant</h3>
 <p>Ask questions about Title IX policies, sexual misconduct procedures, campus safety reports, and related resources at Middle Georgia State University.</p>
 <details>
-    <summary>This is an insecurely implemented AI. Do not use it for critical decisions.</summary>
-    <p>Note: You are interacting with an artificial intelligence agent.
-        Not only is the information on this website false, but the AI may also provide inaccurate information.
-        Please use your best judgment when evaluating the information provided.
-        Avoid using the text provided as advice for important or critical decisions regarding things like employment, legal decisions, or financial products or services.</p>
+    <summary class="tag">The AI may provide inaccurate information. </summary>
+    <p>Be sure to verify any information provided.</p>
 </details>
 
 <details>
@@ -28,3 +28,5 @@ x-data="{ loading: false }"
 </fieldset>
 </form>
 </section>
+
+{% endblock %}
