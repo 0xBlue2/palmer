@@ -8,7 +8,7 @@ dependencies = [
     "uvicorn",
     "python-multipart",
     "cohere",
-    "pandas"
+    "mistune"
 ]
 
 [tool.fastapi]
