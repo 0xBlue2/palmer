@@ -15,7 +15,7 @@ TITLE_IX_POLICY = Document(
     id="mga-title-ix-policy",
     data={
         "title": "MGA Title IX Policy",
-        "url": "https://www.mga.edu/title-ix/",
+        "url": "https://www.mga.edu/title-ix/docs/NEW_Title_IX_Policy_effective_2020-08-11.pdf",
         "text": (
             "Middle Georgia State University (MGA) is committed to providing an environment free from "
             "discrimination based on sex, in accordance with Title IX of the Education Amendments of 1972. "
