@@ -10,7 +10,8 @@ dependencies = [
     "cohere",
     "pandas",
     "mistune",
-    "markitdown[all]"
+    "markitdown[all]",
+    "langchain-text-splitters"
 ]
 
 [tool.fastapi]
