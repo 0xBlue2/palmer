@@ -1,0 +1,9 @@
+fastapi
+fastapi-cli
+jinja2
+uvicorn
+python-multipart
+cohere
+pandas
+mistune
+markitdown[all]

@@ -11,6 +11,8 @@ from backend.CONSTANTS import *
 from backend.template_setup import templates
 from backend.helpers import template_exists, render_template, chat
 
+from backend.documents import documents as ALL_DOCUMENTS
+
 app = FastAPI()
 
 
@@ -45,7 +47,7 @@ async def return_section(response: Response, request: Request, type: str, ai: st
 @app.post("/chatbot/message", response_class=HTMLResponse)
 async def receive_message(request: Request, user_message: str = Form()) -> HTMLResponse:
     global messages
-    context = chat(user_message, request)
+    context = chat(user_message, request, documents=ALL_DOCUMENTS)
     messages.append(UserChatMessageV2(content=user_message))
     messages.append(AssistantChatMessageV2(content=context.get("ai_message")))
 

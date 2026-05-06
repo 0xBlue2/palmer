@@ -3,13 +3,17 @@ from fastapi import Request, HTTPException
 from fastapi.responses import HTMLResponse
 from typing import Any
 from backend.CONSTANTS import *
-from backend.documents import ALL_DOCUMENTS
 from backend.tools import *
 from backend.template_setup import templates, jenv
 import jinja2
 import mistune
 import cohere
-from cohere.types import SystemChatMessageV2, UserChatMessageV2, AssistantChatMessageV2, ChatMessages, ToolChatMessageV2
+from cohere.types import SystemChatMessageV2, UserChatMessageV2, AssistantChatMessageV2, ChatMessages, ToolChatMessageV2, Document
+from langchain_text_splitters import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
+import langchain_core.documents.base as langchain_documents
+
+import re
+from markitdown import MarkItDown
 
 # helper function to check if a template exists in pages dir
 def template_exists(template_name: str) -> bool:
@@ -52,7 +56,7 @@ def render_template(template_name: str, request: Request) -> HTMLResponse:
         
 # make api call to cohere with user message and return context dict for rendering
 # request only required so we can return in dict
-def chat(user_message: str, request: Request) -> dict[str, Any]:
+def chat(user_message: str, request: Request, documents: list[Document]) -> dict[str, Any]:
     assert COHERE_API_KEY is not None, "Cohere API key not found. Please set the COHERE_API_KEY environment variable."
     co = cohere.ClientV2(api_key=COHERE_API_KEY)
 
@@ -64,7 +68,7 @@ def chat(user_message: str, request: Request) -> dict[str, Any]:
     response = co.chat(
         model="command-a-03-2025",
         messages=messages,
-        documents=ALL_DOCUMENTS,
+        documents=documents[0:200],
         # tools=[describe_tool]
         # citation_options=CitationOptions(mode="accurate"),
     )
@@ -83,7 +87,7 @@ def chat(user_message: str, request: Request) -> dict[str, Any]:
         response = co.chat(
             model="command-a-03-2025",
             messages=messages,
-            documents=ALL_DOCUMENTS,
+            documents=documents,
             tools=[describe_tool]
         )
 
@@ -112,7 +116,7 @@ def chat(user_message: str, request: Request) -> dict[str, Any]:
 
     # Add the user message and AI response to the chat history
     messages.append(UserChatMessageV2(content=user_message))  # todo: add length/security checks
-    messages.append(AssistantChatMessageV2(content=ai_response))
+    messages.append(SystemChatMessageV2(content=ai_response))
 
     context: dict[str, Request | Any] = {
         "request": request,
@@ -123,3 +127,56 @@ def chat(user_message: str, request: Request) -> dict[str, Any]:
     }
 
     return context
+
+def slug(text: str) -> str:
+    text = text.lower()
+    text = re.sub(r'[^a-z0-9]+', '-', text)
+    return text
+
+def chunk_markdown_from_url(url: str, title: str, description: str = "", id: str = "", chunk_size: int = TEXT_SPLITTER_CHUNK_SIZE, chunk_overlap: int = TEXT_SPLITTER_CHUNK_OVERLAP) -> list[cohere.types.Document]:
+    return chunk_markdown_from_file(path=url, web_url=url,    title=title, description=description, id=id, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+
+def chunk_markdown_from_file(path: str, web_url: str, title: str, description: str = "", id: str = "", chunk_size: int = TEXT_SPLITTER_CHUNK_SIZE, chunk_overlap: int = TEXT_SPLITTER_CHUNK_OVERLAP) -> list[cohere.types.Document]:
+    match Path(path).suffix:
+        case ".md":
+            with open(path, "r", encoding="utf-8") as doc:
+                contents = doc.read()
+                return chunk_markdown_from_string(contents, web_url, title, description, id, chunk_size, chunk_overlap)
+        case ".pdf" | ".html":
+            md = MarkItDown().convert(path) # also works with urls
+            return chunk_markdown_from_string(md.text_content, web_url, title, description, id, chunk_size, chunk_overlap)
+        case _:
+            raise NotImplementedError(f"Unsupported file type for path {path} with suffix {Path(path).suffix}")
+
+
+# return list of documents (chunks of markdown) from one source, each with the same metadata
+def chunk_markdown_from_string(md_string: str, web_url: str, title: str, description: str = "", id: str = "", chunk_size: int = TEXT_SPLITTER_CHUNK_SIZE, chunk_overlap: int = TEXT_SPLITTER_CHUNK_OVERLAP) -> list[cohere.types.Document]:
+    if id == "":
+        id = slug(title)
+
+    headers : list[tuple[str, str]] = [
+        ("#", "Header 1"),
+        ("##", "Header 2"),
+        ("###", "Header 3"),
+        ("####", "Header 4"),
+        ("#####", "Header 5"),
+        ("######", "Header 6"),
+    ]
+
+    md_splitter = MarkdownHeaderTextSplitter(headers)
+    documents : list[langchain_documents.Document] = md_splitter.split_text(md_string)
+
+    
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    documents = text_splitter.split_documents(documents=documents)
+    
+    # TODO: use, embed / rerank models instead of sending documents to chat model
+    return [cohere.types.Document(
+        id = f"{id}_chunk_{i}",
+        data={
+            "text": doc.page_content,
+            "url": web_url,
+            "title": title,
+            **({"description": description} if description else {})
+        } 
+    ) for i, doc in enumerate(documents) ]

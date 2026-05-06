@@ -47,3 +47,11 @@ Three main features (all insights/data mocked):
   - added code to add resources.md contents to the RAG docs
   - stopped duplicating chat history in currentChatHistory and messages variables
   - broke large main file into CONSTANTS, helpers, template_setup, and tools (.py) files
+
+  ## Day 8
+  - rewrote documents.py to generate chunks/document list from local or remote pdf/html files
+    - for local files, drop them in backend/rag_documents and update the LOCAL_DOCS dict
+    - for remote ones, just update the REMOTE_DOCS dict
+  - Not currently used - will use once backend uses embed/rerank models instead of sending everything to the chat model
+  - Fixed loading property on chatbot submit button
+  - Restructured system prompt for chatbot

@@ -12,15 +12,16 @@
 <div id="messageHistory">
 {% include "chatbot_messages.html" %}
 </div>
-<form action="/chatbot/message" method="post" hx-post="/chatbot/message" hx-target="#messageHistory" hx-swap="beforeend" hx-on::after-request="this.reset()"
-x-data="{ loading: false }" 
-      @htmx:before-request="loading = true; setTimeout(() => loading = false, 4000)"
-      :aria-busy="loading"
->
+<form action="/chatbot/message" method="post"
+    hx-post="/chatbot/message"
+    hx-target="#messageHistory"
+    hx-swap="beforeend"
+    hx-on::before-request="document.getElementById('submit_button').setAttribute('aria-busy', 'true')"
+    hx-on::after-request="this.reset(); document.getElementById('submit_button').setAttribute('aria-busy', 'false')">
+
 <fieldset role="group">
-    <input name="user_message" placeholder="Ask about MGA Title IX policies, reporting, resources…" required x-bind:aria-busy="loading"/>
-    <button type="submit"
-        x-bind:aria-busy="loading">Submit</button>
+    <input name="user_message" placeholder="Ask about MGA Title IX policies, reporting, resources…" required/>
+    <button type="submit" id="submit_button">Submit</button>
 </fieldset>
 </form>
 </section>

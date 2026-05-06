@@ -1,0 +1,12 @@
+Metadata-Version: 2.4
+Name: backend
+Version: 0.1.0
+Requires-Dist: fastapi
+Requires-Dist: fastapi-cli
+Requires-Dist: jinja2
+Requires-Dist: uvicorn
+Requires-Dist: python-multipart
+Requires-Dist: cohere
+Requires-Dist: pandas
+Requires-Dist: mistune
+Requires-Dist: markitdown[all]
