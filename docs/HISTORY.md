@@ -55,3 +55,7 @@ Three main features (all insights/data mocked):
   - Not currently used - will use once backend uses embed/rerank models instead of sending everything to the chat model
   - Fixed loading property on chatbot submit button
   - Restructured system prompt for chatbot
+
+## Day 9
+  - deleted `demographics.html` template, since it's not being used
+  - added overview of Title IX page - work in progress
