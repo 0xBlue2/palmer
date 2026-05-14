@@ -6,20 +6,15 @@
 app = 'palmer'
 primary_region = 'iad'
 
-[build.compose]
+[build]
 
 [http_service]
-  internal_port = 8080
+  internal_port = 8000
   force_https = true
   auto_stop_machines = 'stop'
   auto_start_machines = true
   min_machines_running = 0
   processes = ['app']
-
-[mounts]
-  source = "matomo_db_data" # we only get one mount per machine
-  # todo: set up multi-Machine setup so app data is persistent too
-  destination = "/var/lib/mysql" 
 
 [[vm]]
   memory = '1gb'
