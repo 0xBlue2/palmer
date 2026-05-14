@@ -31,7 +31,7 @@ RUN addgroup -g 1000 appuser && \
 COPY --from=builder --chown=appuser:appuser /opt/venv /opt/venv
 
 # Copy application code
-COPY --chown=appuser:appuser . .
+COPY --chown=appuser:appuser backend/ backend/
 
 # Switch to non-root user
 USER appuser

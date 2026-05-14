@@ -1,0 +1,56 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: palmer-backend
+    restart: unless-stopped
+    ports:
+      - "443:8000"
+    volumes:
+      - ./backend:/app/backend
+  db:
+    image: mariadb:latest
+    container_name: matomo-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: matomo
+      MYSQL_USER: matomo
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - matomo-db-data:/var/lib/mysql
+
+  matomo:
+    image: matomo:latest
+    container_name: matomo-app
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      MATOMO_DATABASE_HOST: db
+      MATOMO_DATABASE_USERNAME: matomo
+      MATOMO_DATABASE_PASSWORD: ${MATOMO_DATABASE_PASSWORD}
+      MATOMO_DATABASE_DBNAME: matomo
+    volumes:
+      - matomo-app-data:/var/www/html
+    depends_on:
+      - db
+
+  cron:
+    image: matomo:latest
+    container_name: matomo-cron
+    restart: unless-stopped
+    volumes:
+      - matomo-app-data:/var/www/html
+    entrypoint: >
+      /bin/sh -c "while true; do
+      php /var/www/html/console core:archive;
+      sleep 300;
+      done"
+    depends_on:
+      - db
+
+volumes:
+  matomo-db-data:
+  matomo-app-data:
