@@ -16,6 +16,11 @@ primary_region = 'iad'
   min_machines_running = 0
   processes = ['app']
 
+[mounts]
+  source = "matomo_db_data" # we only get one mount per machine
+  # todo: set up multi-Machine setup so app data is persistent too
+  destination = "/var/lib/mysql" 
+
 [[vm]]
   memory = '1gb'
   cpu_kind = 'shared'

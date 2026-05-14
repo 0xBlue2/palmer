@@ -6,9 +6,8 @@ services:
     container_name: palmer-backend
     restart: unless-stopped
     ports:
-      - "443:8000"
-    volumes:
-      - ./backend:/app/backend
+      - "8000:8000"
+
   db:
     image: mariadb:latest
     container_name: matomo-db
@@ -19,7 +18,7 @@ services:
       MYSQL_USER: matomo
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
-      - matomo-db-data:/var/lib/mysql
+      - matomo-db-data:/var/lib/mysql # persistent
 
   matomo:
     image: matomo:latest
@@ -33,7 +32,7 @@ services:
       MATOMO_DATABASE_PASSWORD: ${MATOMO_DATABASE_PASSWORD}
       MATOMO_DATABASE_DBNAME: matomo
     volumes:
-      - matomo-app-data:/var/www/html
+      - matomo-app-data:/var/www/html # not persistent
     depends_on:
       - db
 
