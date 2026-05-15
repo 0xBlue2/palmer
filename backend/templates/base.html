@@ -164,7 +164,14 @@
         </section>
         <section class="panel">
             <div id="content">{% block content %}{% endblock %}</div>
+
         </section>
+
+        <section class="panel">
+            {% include 'matomo_optout.html' %}
+        </section>
+        
+
     </main>
 
 <!-- 100% privacy-first analytics -->
